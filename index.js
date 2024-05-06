@@ -1,5 +1,5 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js"
-import {getDatabase, ref, push, onValue} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js"
+import {getDatabase, ref, push, onValue, remove} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js"
 
 const appSettings = {
     databaseURL: "https://reatime-database-5c209-default-rtdb.europe-west1.firebasedatabase.app/"
@@ -52,6 +52,16 @@ function addToList( addition ) {
             let newEl = document.createElement("li")
             newEl.textContent = itemValue
             shoppingListEl.append(newEl)
+
+
+
+
+            newEl.addEventListener("dblclick", function() {
+                // console.log(itemID)
+
+                let exactLocationOfItemInDB = ref(database,`shoppingList/${itemID}`)
+                remove(exactLocationOfItemInDB)
+            })
         }
 }
 
@@ -67,16 +77,21 @@ function clearInputField() {
 }
 
 onValue(shoppingListInDB, function(snapshot) {
-    let itemArray = Object.entries(snapshot.val())
+    // snapshot.exists() removes the bug where the shoppingListInDB reference gets despawned when there is no items in the DB
+    if(snapshot.exists()){
+        let itemArray = Object.entries(snapshot.val())
     
-    shoppingListEl.innerHTML = ""
+        shoppingListEl.innerHTML = ""
 
-    for(let i=0; i<itemArray.length; i++) {
-        let currentItem = itemArray[i]
-        // let currentItemID = currentItem[0]
-        // let currentItemValue = currentItem[1]
+        for(let i=0; i<itemArray.length; i++) {
+            let currentItem = itemArray[i]
+            // let currentItemID = currentItem[0]
+            // let currentItemValue = currentItem[1]
 
-        addToList(currentItem)
-        // console.log(itemArray[i])
+            addToList(currentItem)
+            // console.log(itemArray[i])
+        }
+    } else {
+        shoppingListEl.innerHTML = "No items here..."
     }
 })
